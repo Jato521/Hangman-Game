@@ -1,0 +1,148 @@
+import csv
+import random
+
+#Function check if a letter is in the word
+def checkWord (letter, word):
+    if letter in word:
+        return True
+    else:
+        return False
+    
+#combine previous with current array   
+def combineArray (array1, array2):
+    comboArray=[]
+    for item in range (len(array1)):
+        if array1[item] != '_ ':
+            comboArray.append(array1[item])
+        elif array2[item] != '_ ':
+            comboArray.append(array2[item])
+        else:
+            comboArray.append('_ ')
+    return comboArray
+
+#changing an array into a string
+def arrayToString (array):
+    string=""
+    for item in array:
+        string+=item;
+    return string
+
+#string to array
+def stringToArray (string):
+    array=[]
+    for letter in string:
+        array.append(letter)
+    return array
+
+#validate input is a letter within the remaining letters
+def validateGuess (letter, array):
+    while (letter not in array):
+        print("Invalid guess.")
+        letter=input('Guess a letter: ').lower()
+    return letter
+
+#ask if user wants to guess; validation
+def askGuessWord():
+    guess=input('Do you want to guess the word?(Y/N) ').lower()
+    
+    while ((guess != "y") and (guess != "n")):
+        guess=input("Invalid input. Enter (y/n) only: ").lower()
+    return guess
+
+#checking if the word is completed and out of "_ "
+def checkCompletion(array):
+    for char in array:
+        if (char=="_ "):
+            return False
+    return True    
+ 
+def getWord():
+    wordBank=[]
+    count=0
+    
+    #open file and store words in an array
+    with open('word_list.txt') as csvFile:
+        csvReader=csv.reader(csvFile, delimiter=',')
+        for row in csvReader:
+            wordBank.append(row[0])
+            count+=1
+    
+    #generate a random number
+    selection=random.randint(0, count-1)
+    wordChosen=wordBank[selection]
+    return wordChosen
+
+#starting the game 
+answer=getWord()
+lives=6
+alphabetArray=['a','b','c','d','e','f','g','h','i','j','k',
+               'l','m','n','o','p','q','r','s','t','u','v',
+               'w','x','y','z']
+print('Lives: '+ str(lives), end='\n\n')
+
+answerArray=stringToArray(answer)
+
+#starting off with dashes
+initialProgress=[]
+for item in answerArray:
+    initialProgress.append('_ ')
+
+correct=False
+complete=False
+
+#playing the game
+while ((lives > 0) and (not correct) and (not complete)):
+    print ('Remaining Letters: ', end='')
+    print (alphabetArray)
+    letterGuess=input('Guess a letter: ').lower()
+    letterGuess=validateGuess(letterGuess, alphabetArray)
+    newProgress=[]    
+    
+    #if letter is in word, append
+    if checkWord(letterGuess, answer):
+        for letter in answerArray:
+            if (letterGuess==letter):
+                newProgress.append(letterGuess)
+            else:
+                newProgress.append('_ ')
+       
+        #combined array
+        initialProgress = combineArray(initialProgress, newProgress)
+        print(arrayToString(initialProgress))
+
+    #if not in word, minus 1 life  display life
+    else:
+        lives-=1
+        print('The letter you entered was not part of the answer.')
+        print('You just lost a life.')
+        print('Now you have ' + str(lives) + ' lives left.')
+
+    #removed the guessed letter
+    alphabetArray.remove(letterGuess)
+    
+    #check if word is completed
+    complete=checkCompletion(initialProgress)
+    
+    #ask "do you want to guess word"
+    if(not complete):
+        boolGuessWord=askGuessWord()
+    
+    if boolGuessWord=='y':
+        guessWord=input('What\'s your guess? ').lower()
+        if guessWord==answer:
+            print('Correct! You won!')
+            correct=True
+        
+        #do not display negative life count from guessing word wrong
+        elif (lives>=1):
+                print('You lost a life for guessing the word incorrectly.')
+                lives-=1
+                print('You now have '+ str(lives) + ' lives remaining.')
+    print(end='\n\n\n')
+    print('******************************************************************************')
+
+if (lives==0):
+    print('Game Over. You lost.')
+    
+if (complete):
+    print('You won!')

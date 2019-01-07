@@ -1,0 +1,7 @@
+damage,
+critical,
+sport,
+reading,
+contact,
+information,
+alphabet,
